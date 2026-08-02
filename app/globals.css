@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Anek+Devanagari:wght@400;500;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Cores da sua marca */
+  --color-brand-yellow: #FFD100;
+  --color-brand-dark: #1A1A1A;
+  --color-brand-bg: #FAFAFA;
+  --color-brand-wpp: #25D366;
+  
+  /* Fontes */
+  --font-sans: "Anek Devanagari", sans-serif;
+  
+  /* Animação do WhatsApp */
+  --animate-pulse-whatsapp: pulse-whatsapp 2s infinite;
+}
+
+/* Os frames da animação do WhatsApp */
+@keyframes pulse-whatsapp {
+  0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+  70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+}
+
+/* Ocultar scrollbar dos carrosseis */
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar { height: 6px; }
+  .scrollbar-hide::-webkit-scrollbar-thumb { background-color: #999; border-radius: 4px; }
+}

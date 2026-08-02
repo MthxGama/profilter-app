@@ -1,0 +1,205 @@
+import { supabase } from '../../../src/lib/supabase';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import AddToCartButton from '../../../src/components/AddToCartButton'; // Importação do nosso novo botão
+import CartIcon from '@/src/components/CartIcon';
+import SearchBar from '@/src/components/SearchBar';
+
+export const dynamic = 'force-dynamic';
+
+interface Props {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+export default async function ProdutoDetalhe({ params }: Props) {
+  const resolvedParams = await params;
+  const produtoId = resolvedParams.id;
+
+  // Busca o produto específico no Supabase pelo procod
+  const { data: produto, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('procod', produtoId)
+    .single();
+
+  if (error || !produto) {
+    notFound();
+  }
+
+  // Formata a imagem (pode vir como array ou string)
+  const imagemSrc = Array.isArray(produto.img_url) 
+    ? produto.img_url[0] 
+    : (produto.img_url || '/img/produto-placeholder.png');
+
+  return (
+    <div className="bg-brand-bg text-brand-dark font-sans antialiased min-h-screen flex flex-col">
+      
+      {/* CABEÇALHO */}
+        <header className="bg-brand-yellow py-5 w-full">
+          <div className="w-full max-w-[1500px] mx-auto px-4 lg:px-[5%] flex flex-col md:flex-row justify-between items-center gap-4">
+            
+            <Link href="/" title="Página Inicial - Profilter">
+              <img src="/img/logo.png" alt="Logotipo Profilter" className="h-10 w-auto block" />
+            </Link>
+            
+            {/* Nova barra de pesquisa no meio */}
+            <div className="w-full md:flex-1 md:max-w-xl md:mx-6">
+              <SearchBar />
+            </div>
+
+            {/* Ícone da Sacola e Botão Fale Conosco Original */}
+            <div className="flex items-center gap-4 md:gap-6 w-full md:w-auto justify-between md:justify-end">
+              
+              <CartIcon />
+
+              <button className="bg-[#2D2D2D] text-brand-yellow border-none py-3 px-10 font-extrabold text-base cursor-pointer uppercase transition-all duration-200 hover:scale-105 hover:brightness-110 rounded-t-lg rounded-bl-lg [clip-path:polygon(0_0,100%_0,100%_calc(100%-15px),calc(100%-15px)_100%,0_100%)]">
+                FALE CONOSCO
+              </button>
+              
+            </div>
+
+          </div>
+        </header>
+      {/* CONTEÚDO PRINCIPAL DO PRODUTO */}
+      <main className="flex-grow py-12 lg:py-16">
+        <div className="w-full max-w-[1300px] mx-auto px-4 lg:px-[5%]">
+          
+          {/* Breadcrumb de navegação */}
+          <nav className="mb-8 text-sm font-bold text-gray-600 flex items-center gap-2">
+            <Link href="/" className="hover:text-black">Home</Link>
+            <span>/</span>
+            <Link href="/catalogo" className="hover:text-black">Catálogo</Link>
+            <span>/</span>
+            <span className="text-black truncate max-w-[250px]">{produto.title}</span>
+          </nav>
+
+          <div className="bg-white rounded-2xl shadow-md border border-[#ccc] overflow-hidden grid grid-cols-1 lg:grid-cols-2 gap-8 p-8 md:p-12 items-start">
+            
+            {/* COLUNA DA FOTO */}
+            <div className="w-full h-[350px] md:h-[450px] bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center p-6 relative sticky top-6">
+              <img 
+                src={imagemSrc} 
+                alt={produto.title} 
+                className="max-h-full max-w-full object-contain mix-blend-multiply drop-shadow-md" 
+              />
+              <span className="absolute top-4 left-4 bg-brand-dark text-brand-yellow text-xs font-black uppercase py-1 px-3 rounded-md">
+                Linha Leve
+              </span>
+            </div>
+
+            {/* COLUNA DE INFORMAÇÕES COMPLETAS */}
+            <div className="flex flex-col space-y-6">
+              
+              <div>
+                {/* 1. TÍTULO DO PRODUTO EM PRIMEIRO LUGAR */}
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-black uppercase text-black leading-tight mb-4">
+                  {produto.title}
+                </h1>
+
+                {/* 2. TAGS DE CÓDIGOS EQUIVALENTES (Wega, Tecfil, etc) */}
+                <div className="flex flex-wrap items-center gap-2 mb-6">
+                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-yellow-50 border border-yellow-100">
+                    <span className="text-xs font-bold text-amber-700 tracking-wider">PROFILTER: {produto.procod}</span>
+                  </div>
+                  
+                  {produto.wega && (
+                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-red-50 border border-red-100">
+                      <span className="text-xs font-bold text-red-700 tracking-wider">WEGA: {produto.wega}</span>
+                    </div>
+                  )}
+
+                  {produto.tecfil && (
+                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 border border-blue-100">
+                      <span className="text-xs font-bold text-blue-700 tracking-wider">TECFIL: {produto.tecfil}</span>
+                    </div>
+                  )}
+
+                  {produto.codvar && (
+                    <div className="inline-flex items-center px-3 py-2 rounded-full bg-gray-100 border border-gray-200">
+                      <span className="text-xs font-bold text-gray-600 tracking-wider">CÓDIGOS VARIÁVEIS: {produto.codvar}</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Descrição detalhada */}
+                <div className="text-gray-700 font-medium text-base leading-relaxed space-y-3">
+                  <p>{produto.description || "Filtro automotivo de alta performance desenvolvido sob rigorosos padrões de qualidade para garantir a máxima proteção e durabilidade ao sistema do veículo."}</p>
+                </div>
+              </div>
+
+              {/* Bloco de Estoque e Categoria */}
+              <div className="border-t border-b border-gray-200 py-4 space-y-2 bg-gray-50 px-4 rounded-xl">
+                <div className="flex justify-between text-sm">
+                  <span className="font-bold text-gray-500 uppercase">Disponibilidade:</span>
+                  <span className="font-extrabold text-green-600 uppercase">Em estoque (Rede de Distribuidores)</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="font-bold text-gray-500 uppercase">Categoria:</span>
+                  <span className="font-extrabold text-black uppercase">Filtro Automotivo de Alto Giro</span>
+                </div>
+              </div>
+
+              {/* Especificações Técnicas */}
+              {produto.specs && (
+                <div className="space-y-2">
+                  <h3 className="text-sm font-black text-black uppercase tracking-wider">Especificações Técnicas:</h3>
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 text-sm text-gray-700 font-medium">
+                    {typeof produto.specs === 'object' ? (
+                      <ul className="space-y-1">
+                        {Object.entries(produto.specs).map(([key, value]) => (
+                          <li key={key} className="flex justify-between">
+                            <span className="font-bold uppercase text-gray-500">{key}:</span>
+                            <span className="text-black">{String(value)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p>{produto.specs}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* BOTÕES DE AÇÃO ATUALIZADOS */}
+              <div className="space-y-3 pt-4 border-t border-gray-200">
+                
+                {/* Nosso novo botão substituiu o link direto do WhatsApp */}
+                <AddToCartButton produto={produto} />
+                
+                <Link 
+                  href="/catalogo"
+                  className="w-full bg-gray-100 text-gray-800 py-3 rounded-xl font-extrabold uppercase text-sm cursor-pointer transition-all duration-200 hover:bg-gray-200 flex items-center justify-center text-center"
+                >
+                  Continuar Vendo o Catálogo
+                </Link>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </main>
+
+      {/* RODAPÉ SIMPLIFICADO */}
+      <footer className="bg-brand-dark text-white py-10 w-full mt-10 border-t-[15px] border-brand-yellow">
+        <div className="w-full max-w-[1500px] mx-auto px-4 lg:px-[5%] flex flex-col md:flex-row justify-between items-center gap-6">
+          <img src="/img/logo-branca.png" alt="Profilter Logo" loading="lazy" className="max-w-[150px] block" />
+          <p className="text-[#999] text-sm text-center md:text-left">© 2026 Profilter. Todos os direitos reservados.</p>
+          <div className="flex gap-4">
+            <Link href="/politica-de-privacidade" className="text-gray-400 text-sm hover:text-brand-yellow transition-colors">Privacidade</Link>
+            <Link href="/fale-conosco" className="text-gray-400 text-sm hover:text-brand-yellow transition-colors">Contato</Link>
+          </div>
+        </div>
+      </footer>
+
+      {/* BOTÃO WHATSAPP FLUTUANTE */}
+      <a href="https://wa.me/5541992681533" className="fixed bottom-5 right-5 lg:bottom-[30px] lg:right-[30px] w-[50px] h-[50px] lg:w-[60px] lg:h-[60px] bg-brand-wpp rounded-full flex items-center justify-center shadow-[2px_4px_15px_rgba(0,0,0,0.2)] z-[50] transition-all duration-300 hover:scale-110 hover:shadow-[2px_6px_20px_rgba(0,0,0,0.3)] animate-[pulse-whatsapp_2s_infinite] hover:animate-none" target="_blank" rel="noopener noreferrer" aria-label="Atendimento via WhatsApp">
+        <img src="/img/icon-whatsapp.png" alt="WhatsApp" loading="lazy" className="w-[28px] h-[28px] lg:w-[35px] lg:h-[35px] object-contain block" />
+      </a>
+
+    </div>
+  );
+}
