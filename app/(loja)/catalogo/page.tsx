@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { supabase } from '@/src/lib/supabase';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-
 
 // Tipagem base do produto
 interface Product {
@@ -13,23 +12,21 @@ interface Product {
   title: string;
   price: number | null;
   img_url: string | string[];
-  wega?: string;   // <-- Ajustado aqui
-  tecfil?: string; // <-- Ajustado aqui
+  wega?: string; 
+  tecfil?: string; 
 }
 
-export default function CatalogoPage() {
+// 1. Separamos o conteúdo principal em um componente interno
+function CatalogoContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Estado do Filtro Ativo da Sidebar
   const [activeCategory, setActiveCategory] = useState<string>('');
 
-  // Captura o termo de busca vindo da URL (ex: ?busca=wega123)
   const searchParams = useSearchParams();
   const termoBusca = searchParams.get('busca');
 
-  // 1. Busca inicial dos produtos no Supabase
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
@@ -50,11 +47,9 @@ export default function CatalogoPage() {
     fetchProducts();
   }, []);
 
-  // 2. Lógica de Filtragem Automática (Busca + Categoria)
   useEffect(() => {
     let result = products;
 
-    // A. Filtro da Barra de Pesquisa (se existir termo na URL)
     if (termoBusca) {
       const q = termoBusca.toLowerCase();
       result = result.filter(p => 
@@ -65,33 +60,29 @@ export default function CatalogoPage() {
       );
     }
 
-    // B. Filtro da Barra Lateral / Categoria
     if (activeCategory) {
       result = result.filter(p => 
         p.title.toLowerCase().includes(activeCategory.toLowerCase())
       );
     }
 
-    // Atualiza a lista exibida na tela
     setFilteredProducts(result);
-  }, [activeCategory, products, termoBusca]); // O React refaz o filtro sempre que um desses 3 mudar
+  }, [activeCategory, products, termoBusca]);
 
-  // Função auxiliar para pegar a primeira imagem
   const getImageUrl = (imgData: any) => {
-    if (!imgData) return '/placeholder.png'; // Coloque uma imagem padrão no seu projeto
+    if (!imgData) return '/placeholder.png';
     return Array.isArray(imgData) ? imgData[0] : imgData;
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row max-w-7xl mx-auto px-4 py-8 gap-8">
       
-      {/* BARRA LATERAL DE FILTROS (SIDEBAR) */}
+      {/* BARRA LATERAL DE FILTROS */}
       <aside className="w-full md:w-64 flex-shrink-0">
         <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 sticky top-24">
           <h2 className="text-lg font-black text-brand-dark uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">
             Filtros
           </h2>
-          
           <div className="space-y-2">
             <button 
               onClick={() => setActiveCategory('')}
@@ -147,8 +138,6 @@ export default function CatalogoPage() {
             {filteredProducts.map((produto) => (
               <Link href={`/produto/${produto.procod}`} key={produto.id} className="group">
                 <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-full flex flex-col">
-                  
-                  {/* Imagem */}
                   <div className="aspect-square bg-white p-4 relative flex items-center justify-center border-b border-gray-50">
                     <img 
                       src={getImageUrl(produto.img_url)} 
@@ -156,8 +145,6 @@ export default function CatalogoPage() {
                       className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
-
-                  {/* Infos do Produto */}
                   <div className="p-4 flex flex-col flex-1">
                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
                       {produto.procod}
@@ -165,7 +152,6 @@ export default function CatalogoPage() {
                     <h2 className="text-sm font-bold text-gray-800 line-clamp-2 mb-2 flex-1 group-hover:text-brand-yellow transition-colors">
                       {produto.title}
                     </h2>
-                    
                     <div className="mt-auto pt-3 border-t border-gray-100">
                       {produto.price ? (
                         <p className="text-lg font-black text-brand-dark">
@@ -178,7 +164,6 @@ export default function CatalogoPage() {
                       )}
                     </div>
                   </div>
-
                 </div>
               </Link>
             ))}
@@ -200,5 +185,18 @@ export default function CatalogoPage() {
       </main>
 
     </div>
+  );
+}
+
+// 2. Exportamos o componente principal envelopado no Suspense
+export default function CatalogoPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-brand-yellow border-solid"></div>
+      </div>
+    }>
+      <CatalogoContent />
+    </Suspense>
   );
 }
