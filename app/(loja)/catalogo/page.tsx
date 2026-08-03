@@ -17,6 +17,7 @@ interface Product {
   img_url: string | string[];
   wega?: string; 
   tecfil?: string; 
+  is_active?: boolean;
 }
 
 // 1. Separamos o conteúdo principal em um componente interno
@@ -36,6 +37,7 @@ function CatalogoContent() {
       const { data, error } = await supabase
         .from('products')
         .select('*')
+        .eq('is_active', true) // <-- ADICIONE ESTA LINHA
         .order('title', { ascending: true });
 
       if (error) {
