@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/src/lib/supabase';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+
 
 // Tipagem base do produto
 interface Product {
@@ -11,6 +13,8 @@ interface Product {
   title: string;
   price: number | null;
   img_url: string | string[];
+  wega?: string;   // <-- Ajustado aqui
+  tecfil?: string; // <-- Ajustado aqui
 }
 
 export default function CatalogoPage() {
@@ -18,10 +22,14 @@ export default function CatalogoPage() {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Estado do Filtro Ativo
+  // Estado do Filtro Ativo da Sidebar
   const [activeCategory, setActiveCategory] = useState<string>('');
 
-  // 1. Busca inicial dos produtos
+  // Captura o termo de busca vindo da URL (ex: ?busca=wega123)
+  const searchParams = useSearchParams();
+  const termoBusca = searchParams.get('busca');
+
+  // 1. Busca inicial dos produtos no Supabase
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
@@ -42,20 +50,31 @@ export default function CatalogoPage() {
     fetchProducts();
   }, []);
 
-  // 2. Lógica de Filtragem Automática
+  // 2. Lógica de Filtragem Automática (Busca + Categoria)
   useEffect(() => {
     let result = products;
 
+    // A. Filtro da Barra de Pesquisa (se existir termo na URL)
+    if (termoBusca) {
+      const q = termoBusca.toLowerCase();
+      result = result.filter(p => 
+        p.title.toLowerCase().includes(q) || 
+        p.procod.toLowerCase().includes(q) ||
+        (p.wega && p.wega.toLowerCase().includes(q)) ||
+        (p.tecfil && p.tecfil.toLowerCase().includes(q))
+      );
+    }
+
+    // B. Filtro da Barra Lateral / Categoria
     if (activeCategory) {
-      // Filtra checando se o título do produto contém a categoria (ex: "Ar", "Óleo")
-      // Caso você tenha uma coluna específica de categoria no Supabase, troque p.title por p.categoria
       result = result.filter(p => 
         p.title.toLowerCase().includes(activeCategory.toLowerCase())
       );
     }
 
+    // Atualiza a lista exibida na tela
     setFilteredProducts(result);
-  }, [activeCategory, products]);
+  }, [activeCategory, products, termoBusca]); // O React refaz o filtro sempre que um desses 3 mudar
 
   // Função auxiliar para pegar a primeira imagem
   const getImageUrl = (imgData: any) => {
@@ -112,7 +131,7 @@ export default function CatalogoPage() {
       <main className="flex-1">
         <div className="mb-6 flex justify-between items-center">
           <h1 className="text-2xl font-black text-brand-dark uppercase tracking-wider">
-            Nosso Catálogo
+            {termoBusca ? `Resultados para "${termoBusca}"` : 'Nosso Catálogo'}
           </h1>
           <span className="text-sm font-bold text-gray-400">
             {filteredProducts.length} {filteredProducts.length === 1 ? 'produto' : 'produtos'}
@@ -167,13 +186,15 @@ export default function CatalogoPage() {
         ) : (
           <div className="bg-white rounded-xl p-10 text-center border border-gray-200">
             <h3 className="text-lg font-bold text-gray-700 mb-2">Nenhum produto encontrado</h3>
-            <p className="text-sm text-gray-500">Tente limpar os filtros ou selecionar outra categoria.</p>
-            <button 
-              onClick={() => setActiveCategory('')}
-              className="mt-4 bg-brand-yellow text-brand-dark px-6 py-2 rounded-lg font-bold text-sm uppercase hover:brightness-95 transition-all"
-            >
-              Limpar Filtros
-            </button>
+            <p className="text-sm text-gray-500">Tente limpar os filtros ou buscar por outro código.</p>
+            <div className="flex justify-center gap-4 mt-4">
+              <Link 
+                href="/catalogo"
+                className="bg-brand-yellow text-brand-dark px-6 py-2 rounded-lg font-bold text-sm uppercase hover:brightness-95 transition-all inline-block"
+              >
+                Limpar Busca
+              </Link>
+            </div>
           </div>
         )}
       </main>

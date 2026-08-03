@@ -18,7 +18,7 @@ export default function SearchBar() {
     <form onSubmit={handleSearch} className="flex w-full max-w-lg relative">
       <input
         type="text"
-        placeholder="Buscar por nome ou código (SKU)..."
+        placeholder="Buscar por nome, SKU, WEGA ou TECFIL..."
         value={termo}
         onChange={(e) => setTermo(e.target.value)}
         className="w-full bg-white border border-gray-300 text-gray-900 py-3 pl-4 pr-12 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-brand-dark focus:border-transparent text-sm"
