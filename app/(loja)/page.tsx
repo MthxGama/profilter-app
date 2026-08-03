@@ -1,8 +1,16 @@
-import { supabase } from '../src/lib/supabase';
+import { supabase } from '../../src/lib/supabase';
 import Link from 'next/link';
-import ProductCart from '../src/components/ProductCart'; // Importando o nosso novo componente!
+import ProductCart from '../../src/components/ProductCart'; // Importando o nosso novo componente!
 import CartIcon from '@/src/components/CartIcon';
 import SearchBar from '@/src/components/SearchBar';
+
+interface Product {
+  id: number;
+  procod: string;
+  title: string;
+  price: number | null;
+  img_url: string | string[];
+}
 
 // Força a página a buscar dados atualizados sempre (ignora o cache)
 export const dynamic = 'force-dynamic';
@@ -14,57 +22,29 @@ export default async function Home() {
   // Proteção: Garante que seja um array vazio caso o banco demore a responder
   const produtosLista = produtos || [];
 
-  // FILTRO: AR (Sem kits e limitado a 5)
-  const produtosAr = produtosLista.filter(produto => {
-    const tituloLower = produto.title.toLowerCase();
-    if (tituloLower.includes('kit')) return false;
-    return tituloLower.includes(' de ar');
-  }).slice(0, 5);
+  /// FILTRO: AR (Sem kits e limitado a 5)
+const produtosAr = produtosLista.filter((produto: Product) => {
+  const tituloLower = produto.title.toLowerCase();
+  if (tituloLower.includes('kit')) return false;
+  return tituloLower.includes(' de ar');
+}).slice(0, 5);
 
-  // FILTRO: COMBUSTÍVEL (Sem kits e limitado a 5)
-  const produtosCombustivel = produtosLista.filter(produto => {
-    const tituloLower = produto.title.toLowerCase();
-    if (tituloLower.includes('kit')) return false;
-    return tituloLower.includes('combustível') || tituloLower.includes('combustivel');
-  }).slice(0, 5);
+// FILTRO: COMBUSTÍVEL (Sem kits e limitado a 5)
+const produtosCombustivel = produtosLista.filter((produto: Product) => {
+  const tituloLower = produto.title.toLowerCase();
+  if (tituloLower.includes('kit')) return false;
+  return tituloLower.includes('combustível') || tituloLower.includes('combustivel');
+}).slice(0, 5);
 
-  // FILTRO: ÓLEO (Sem kits e limitado a 5)
-  const produtosOleo = produtosLista.filter(produto => {
-    const tituloLower = produto.title.toLowerCase();
-    if (tituloLower.includes('kit')) return false;
-    return tituloLower.includes('óleo') || tituloLower.includes('oleo');
-  }).slice(0, 5);
-
+// FILTRO: ÓLEO (Sem kits e limitado a 5)
+const produtosOleo = produtosLista.filter((produto: Product) => {
+  const tituloLower = produto.title.toLowerCase();
+  if (tituloLower.includes('kit')) return false;
+  return tituloLower.includes('óleo') || tituloLower.includes('oleo');
+}).slice(0, 5);
   return (
     <div className="bg-brand-bg text-brand-dark font-sans antialiased min-h-screen">
       
-      {/* CABEÇALHO */}
-        <header className="bg-brand-yellow py-5 w-full">
-          <div className="w-full max-w-[1500px] mx-auto px-4 lg:px-[5%] flex flex-col md:flex-row justify-between items-center gap-4">
-            
-            <Link href="/" title="Página Inicial - Profilter">
-              <img src="/img/logo.png" alt="Logotipo Profilter" className="h-10 w-auto block" />
-            </Link>
-            
-            {/* Nova barra de pesquisa no meio */}
-            <div className="w-full md:flex-1 md:max-w-xl md:mx-6">
-              <SearchBar />
-            </div>
-
-            {/* Ícone da Sacola e Botão Fale Conosco Original */}
-            <div className="flex items-center gap-4 md:gap-6 w-full md:w-auto justify-between md:justify-end">
-              
-              <CartIcon />
-
-              <button className="bg-[#2D2D2D] text-brand-yellow border-none py-3 px-10 font-extrabold text-base cursor-pointer uppercase transition-all duration-200 hover:scale-105 hover:brightness-110 rounded-t-lg rounded-bl-lg [clip-path:polygon(0_0,100%_0,100%_calc(100%-15px),calc(100%-15px)_100%,0_100%)]">
-                FALE CONOSCO
-              </button>
-              
-            </div>
-
-          </div>
-        </header>
-
       {/* BANNER PRINCIPAL */}
       <section className="w-full block bg-brand-yellow">
         <img src="/img/banner_hero.png" alt="A Segurança que seus clientes exigem" className="w-full h-auto block m-0" />
@@ -188,80 +168,6 @@ export default async function Home() {
           </div>
         </section>
       </main>
-
-      {/* RODAPÉ */}
-      <footer className="bg-brand-dark text-white py-[60px] w-full mt-10 border-t-[15px] border-brand-yellow">
-        <div className="w-full max-w-[1500px] mx-auto px-4 lg:px-[5%] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.2fr_0.8fr_1.2fr_1fr] gap-10 text-[0.9rem]">
-          
-          {/* Coluna 1 */}
-          <div>
-            <img src="/img/logo-branca.png" alt="Profilter Logo" loading="lazy" className="max-w-[180px] mb-5 block" />
-            <p className="text-[#ccc] leading-[1.5] mb-6 pr-5 text-[0.95rem]">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-            <div className="flex gap-3">
-              <a href="#" aria-label="Facebook"><img src="/img/icon-fb.png" alt="Facebook" loading="lazy" className="w-8 h-8 transition-transform duration-200 hover:scale-110 block" /></a>
-              <a href="#" aria-label="Instagram"><img src="/img/icon-ig.png" alt="Instagram" loading="lazy" className="w-8 h-8 transition-transform duration-200 hover:scale-110 block" /></a>
-              <a href="#" aria-label="LinkedIn"><img src="/img/icon-in.png" alt="LinkedIn" loading="lazy" className="w-8 h-8 transition-transform duration-200 hover:scale-110 block" /></a>
-            </div>
-          </div>
-
-          {/* Coluna 2 */}
-          <nav aria-label="Navegação Institucional">
-            <h4 className="text-brand-yellow mb-6 font-extrabold uppercase text-base">INSTITUCIONAL</h4>
-            <ul className="list-none">
-              <li className="mb-4"><Link href="/politica-de-entrega" className="text-[#ccc] no-underline font-medium transition-colors hover:text-brand-yellow">Política de entrega</Link></li>
-              <li className="mb-4"><Link href="/politica-de-privacidade" className="text-[#ccc] no-underline font-medium transition-colors hover:text-brand-yellow">Política de Privacidade</Link></li>
-              <li className="mb-4"><Link href="/duvidas-frequentes" className="text-[#ccc] no-underline font-medium transition-colors hover:text-brand-yellow">Dúvidas Frequentes</Link></li>
-              <li className="mb-4"><Link href="/trocas-e-devolucoes" className="text-[#ccc] no-underline font-medium transition-colors hover:text-brand-yellow">Trocas e devoluções</Link></li>
-              <li className="mb-4"><Link href="/fale-conosco" className="text-[#ccc] no-underline font-medium transition-colors hover:text-brand-yellow">Fale Conosco</Link></li>
-            </ul>
-          </nav>
-
-          {/* Coluna 3 */}
-          <address className="not-italic">
-            <h4 className="text-brand-yellow mb-6 font-extrabold uppercase text-base">ATENDIMENTO</h4>
-            <div className="flex items-start gap-4 pb-4 mb-4 border-b border-[#444]">
-              <img src="/img/icon-phone.png" alt="Telefone" loading="lazy" className="w-6 h-6 object-contain mt-0.5 block" />
-              <div className="flex flex-col">
-                <span className="text-[#999] text-[0.85rem] mb-0.5">Compre por telefone</span>
-                <strong className="text-white text-base font-bold">(41) 0000-0000</strong>
-              </div>
-            </div>
-            <div className="flex items-start gap-4 pb-4 mb-4 border-b border-[#444]">
-              <img src="/img/icon-wpp-yellow.png" alt="WhatsApp" loading="lazy" className="w-6 h-6 object-contain mt-0.5 block" />
-              <div className="flex flex-col">
-                <span className="text-[#999] text-[0.85rem] mb-0.5">Fale no WhatsApp</span>
-                <span className="text-[#999] text-[0.75rem] mb-0.5">PROFILTER</span>
-                <strong className="text-white text-base font-bold">(41) 99268-1533</strong>
-              </div>
-            </div>
-            <div className="flex items-start gap-4 pb-4 mb-4 border-b border-[#444]">
-              <img src="/img/icon-mail.png" alt="E-mail" loading="lazy" className="w-6 h-6 object-contain mt-0.5 block" />
-              <div className="flex flex-col">
-                <span className="text-[#999] text-[0.85rem] mb-0.5">Envie um e-mail</span>
-                <strong className="text-white text-base font-bold">contato@profilter.com.br</strong>
-              </div>
-            </div>
-            <div className="flex items-start gap-4">
-              <img src="/img/icon-pin.png" alt="Localização" loading="lazy" className="w-6 h-6 object-contain mt-0.5 block" />
-              <div className="flex flex-col">
-                <span className="text-[#999] text-[0.85rem] mb-0.5">Onde estamos</span>
-              </div>
-            </div>
-          </address>
-
-          {/* Coluna 4 */}
-          <div>
-            <h4 className="text-brand-yellow mb-6 font-extrabold uppercase text-base">FORMAS DE PAGAMENTO</h4>
-            <img src="/img/pagamentos.png" alt="Cartões e Pix" loading="lazy" className="max-w-full mb-8 block" />
-            
-            <h4 className="text-brand-yellow mb-6 font-extrabold uppercase text-base mt-5">SELOS DE SEGURANÇA</h4>
-            <div className="flex flex-col gap-4">
-              <img src="/img/selo-google.png" alt="Google Safe Browsing" loading="lazy" className="max-h-[30px] object-contain block" />
-              <img src="/img/selo-loja.png" alt="Loja Protegida" loading="lazy" className="max-h-[30px] object-contain block" />
-            </div>
-          </div>
-        </div>
-      </footer>
 
       {/* BOTÃO WHATSAPP FLUTUANTE */}
       <a href="https://wa.me/5541992681533" className="fixed bottom-5 right-5 lg:bottom-[30px] lg:right-[30px] w-[50px] h-[50px] lg:w-[60px] lg:h-[60px] bg-brand-wpp rounded-full flex items-center justify-center shadow-[2px_4px_15px_rgba(0,0,0,0.2)] z-[50] transition-all duration-300 hover:scale-110 hover:shadow-[2px_6px_20px_rgba(0,0,0,0.3)] animate-[pulse-whatsapp_2s_infinite] hover:animate-none" target="_blank" rel="noopener noreferrer" aria-label="Atendimento via WhatsApp">
