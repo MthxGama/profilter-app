@@ -1,17 +1,78 @@
 import { supabase } from '../../../../src/lib/supabase';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import AddToCartButton from '../../../../src/components/AddToCartButton'; // Importação do nosso novo botão
+import AddToCartButton from '../../../../src/components/AddToCartButton';
 import CartIcon from '@/src/components/CartIcon';
 import SearchBar from '@/src/components/SearchBar';
+import { Metadata } from 'next'; // <-- Importação necessária para o Metadata
 
 export const dynamic = 'force-dynamic';
 
 interface Props {
   params: Promise<{
-    id: string;
+    id: string; // no seu caso, esse 'id' recebe o procod da URL
   }>;
 }
+
+// ============================================================================
+// NOVA FUNÇÃO: GERAÇÃO DE METADADOS DINÂMICOS (OPEN GRAPH / WHATSAPP)
+// ============================================================================
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const resolvedParams = await params;
+  const produtoId = resolvedParams.id;
+
+  // Busca o produto no Supabase
+  const { data: produto } = await supabase
+    .from('products')
+    .select('*')
+    .eq('procod', produtoId)
+    .single();
+
+  if (!produto) {
+    return {
+      title: 'Produto não encontrado | Profilter',
+    };
+  }
+
+  // Formata a imagem para o cartão do WhatsApp
+  const imagemSrc = Array.isArray(produto.img_url) 
+    ? produto.img_url[0] 
+    : (produto.img_url || '/img/produto-placeholder.png');
+
+  // Cria um título forte
+  const pageTitle = `Filtro ${produto.title} (${produto.procod}) - Profilter`;
+  
+  // Cria uma descrição para aparecer debaixo do título no WhatsApp
+  const pageDescription = produto.description || `Filtro automotivo com padrão original. Equivalente: Wega ${produto.wega || 'N/A'}, Tecfil ${produto.tecfil || 'N/A'}.`;
+
+  return {
+    title: pageTitle,
+    description: pageDescription,
+    openGraph: {
+      title: pageTitle,
+      description: pageDescription,
+      url: `https://www.profilter.com.br/catalogo/produto/${produtoId}`, // Idealmente, coloque seu domínio real aqui
+      siteName: 'Profilter Catálogo',
+      images: [
+        {
+          url: imagemSrc,
+          width: 800,
+          height: 800,
+          alt: produto.title,
+        },
+      ],
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: pageTitle,
+      description: pageDescription,
+      images: [imagemSrc],
+    },
+  };
+}
+// ============================================================================
+
 
 export default async function ProdutoDetalhe({ params }: Props) {
   const resolvedParams = await params;
