@@ -5,6 +5,9 @@ import { supabase } from '@/src/lib/supabase';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
+
+export const dynamic = 'force-dynamic';
+
 // Tipagem base do produto
 interface Product {
   id: number;
