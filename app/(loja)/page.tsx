@@ -4,6 +4,7 @@ import ProductCart from '../../src/components/ProductCart'; // Importando o noss
 import CartIcon from '@/src/components/CartIcon';
 import SearchBar from '@/src/components/SearchBar';
 
+
 interface Product {
   id: number;
   procod: string;

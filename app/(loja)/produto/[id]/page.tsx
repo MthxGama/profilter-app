@@ -5,6 +5,7 @@ import AddToCartButton from '../../../../src/components/AddToCartButton';
 import CartIcon from '@/src/components/CartIcon';
 import SearchBar from '@/src/components/SearchBar';
 import { Metadata } from 'next'; // <-- Importação necessária para o Metadata
+import ProductOptions from '../../../../src/components/ProductOptions';
 
 export const dynamic = 'force-dynamic';
 
@@ -218,12 +219,12 @@ export default async function ProdutoDetalhe({ params }: Props) {
               {/* BOTÕES DE AÇÃO ATUALIZADOS */}
               <div className="space-y-3 pt-4 border-t border-gray-200">
                 
-                {/* Nosso novo botão substituiu o link direto do WhatsApp */}
-                <AddToCartButton produto={produto} />
+                {/* NOVO SELETOR DE VARIAÇÕES (Ele embute o AddToCartButton dentro dele) */}
+                <ProductOptions produto={produto} />
                 
                 <Link 
                   href="/catalogo"
-                  className="w-full bg-gray-100 text-gray-800 py-3 rounded-xl font-extrabold uppercase text-sm cursor-pointer transition-all duration-200 hover:bg-gray-200 flex items-center justify-center text-center"
+                  className="w-full bg-gray-100 text-gray-800 py-3 rounded-xl font-extrabold uppercase text-sm cursor-pointer transition-all duration-200 hover:bg-gray-200 flex items-center justify-center text-center mt-3"
                 >
                   Continuar Vendo o Catálogo
                 </Link>
